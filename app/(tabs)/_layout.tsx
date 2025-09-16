@@ -1,63 +1,39 @@
-import { Tabs } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 
 export default function TabLayout() {
   return (
-    <Tabs
+    <NativeTabs 
+      appearance="liquid-glass"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#FFA500',
         tabBarInactiveTintColor: '#888888',
-        tabBarStyle: styles.tabBar,
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="polymarket"
-        options={{
-          title: 'Polymarket',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="area-chart" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="hyperliquid"
-        options={{
-          title: 'Hyperliquid',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="line-chart" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="news"
-        options={{
-          title: 'News',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="rss" color={color} />,
-        }}
-      />
-    </Tabs>
+      <NativeTabs.Trigger name="index">
+        <Icon systemName="house.fill" />
+        <Label>Home</Label>
+      </NativeTabs.Trigger>
+      
+      <NativeTabs.Trigger name="polymarket">
+        <Icon systemName="chart.bar.xaxis" />
+        <Label>Polymarket</Label>
+      </NativeTabs.Trigger>
+      
+      <NativeTabs.Trigger name="hyperliquid">
+        <Icon systemName="chart.line.uptrend.xyaxis" />
+        <Label>Hyperliquid</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="news">
+        <Icon systemName="newspaper.fill" />
+        <Label>News</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="search">
+        <Icon systemName="magnifyingglass" />
+        <Label>Search</Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    borderRadius: 20,
-    height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderTopWidth: 0,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-});

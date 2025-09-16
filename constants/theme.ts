@@ -1,25 +1,29 @@
 export const lightTheme = {
-  primary: '#FFA500', // Orange
-  background: '#F5F5F5',
+  primary: '#FF6B00', // Slightly more vibrant orange
+  background: '#F0F0F0', // Slightly darker background
   cardBackground: '#FFFFFF',
-  text: '#333333',
+  text: '#222222', // Darker text for better contrast
   textSecondary: '#666666',
-  border: '#E0E0E0',
+  border: '#DDDDDD', // Slightly darker borders
   shadow: '#000000',
   gradientStart: '#F5F5F5',
-  gradientEnd: '#CCCCCC',
+  gradientEnd: '#EEEEEE',
+  up: '#4CAF50', // Green for positive changes
+  down: '#F44336', // Red for negative changes
 };
 
 export const darkTheme = {
   primary: '#FFA500', // Orange
-  background: '#121212',
-  cardBackground: '#1E1E1E',
+  background: '#000000', // Pure black for OLED screens
+  cardBackground: '#121212', // Darker card background
   text: '#FFFFFF',
-  textSecondary: '#CCCCCC',
-  border: '#333333',
+  textSecondary: '#AAAAAA', // Slightly dimmer secondary text
+  border: '#222222', // Darker borders
   shadow: '#000000',
-  gradientStart: '#121212',
-  gradientEnd: '#222222',
+  gradientStart: '#000000',
+  gradientEnd: '#111111',
+  up: '#4CAF50', // Green for positive changes
+  down: '#F44336', // Red for negative changes
 };
 
 export type Theme = typeof lightTheme;

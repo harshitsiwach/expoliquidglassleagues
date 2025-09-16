@@ -1,9 +1,19 @@
-import { StyleSheet, View, FlatList, RefreshControl, Image, Alert, TouchableOpacity, StatusBar } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, Image, Alert, RefreshControl } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { AppKitButton } from '@reown/appkit-wagmi-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
+// import { AppKitButton } from '@reown/appkit-wagmi-react-native';
+
+import {
+  Host,
+  VStack,
+  HStack,
+  Text as SwiftUIText,
+  Button,
+  Spacer,
+  List,
+} from '@expo/ui/swift-ui';
+import { glassEffect, padding, clipShape } from '@expo/ui/swift-ui/modifiers';
 
 // Define the crypto data structure
 type Cryptocurrency = {
@@ -12,6 +22,7 @@ type Cryptocurrency = {
   symbol: string;
   current_price: number;
   price_change_percentage_24h: number;
+  image?: string; // Add image property for crypto logos
 };
 
 // Define the team selection structure
@@ -71,7 +82,6 @@ export default function HomeScreen() {
 
   // Handle crypto selection for up/down prediction
   const handleCryptoSelect = (id: string, prediction: 'up' | 'down') => {
-    // Check if user is trying to add a 6th token
     const currentSelections = Object.values(selectedCryptos).filter(Boolean).length;
     const isAlreadySelected = selectedCryptos[id] === prediction;
     
@@ -105,7 +115,8 @@ export default function HomeScreen() {
 
 `;
     team.forEach((selection, index) => {
-      teamMessage += `${index + 1}. ${selection.crypto.name} (${selection.crypto.symbol.toUpperCase()}) - Predicted: ${selection.prediction.toUpperCase()}
+      const emoji = selection.prediction === 'up' ? '📈' : '📉';
+      teamMessage += `${index + 1}. ${selection.crypto.name} (${selection.crypto.symbol.toUpperCase()}) ${emoji}
 `;
     });
     
@@ -116,100 +127,144 @@ export default function HomeScreen() {
     );
   };
 
-  // Render individual crypto item
-  const renderCryptoItem = ({ item }: { item: Cryptocurrency }) => {
-    const isSelected = selectedCryptos[item.id];
-    
-    return (
-      <View style={[styles.cryptoItem, { backgroundColor: colors.cardBackground }]}>
-        <View style={styles.cryptoInfo}>
-          <Text style={[styles.cryptoName, { color: colors.text }]}>{item.name}</Text>
-          <Text style={[styles.cryptoSymbol, { color: colors.textSecondary }]}>{item.symbol.toUpperCase()}</Text>
-        </View>
-        <View style={styles.priceContainer}>
-          <Text style={[styles.cryptoPrice, { color: colors.text }]}>${item.current_price.toLocaleString()}</Text>
-          <Text style={[
-            styles.priceChange,
-            { color: item.price_change_percentage_24h >= 0 ? '#4CAF50' : '#F44336' }
-          ]}>
-            {item.price_change_percentage_24h >= 0 ? '↑' : '↓'} 
-            {Math.abs(item.price_change_percentage_24h).toFixed(2)}%
-          </Text>
-        </View>
-        <View style={styles.predictionContainer}>
-          <TouchableOpacity 
-            style={[
-              styles.predictionButton, 
-              styles.upButton,
-              isSelected === 'up' && styles.selectedUpButton
-            ]}
-            onPress={() => handleCryptoSelect(item.id, 'up')}
-          >
-            <Text style={styles.predictionText}>↑</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[
-              styles.predictionButton, 
-              styles.downButton,
-              isSelected === 'down' && styles.selectedDownButton
-            ]}
-            onPress={() => handleCryptoSelect(item.id, 'down')}
-          >
-            <Text style={styles.predictionText}>↓</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
   // Loading state
   if (loading) {
     return (
-      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.text }]}>Loading crypto prices...</Text>
-      </View>
+      <Host style={[styles.container, { backgroundColor: colors.background }]}>
+        <VStack spacing={10} alignment="center">
+          <ActivityIndicator size="large" color={colors.primary} />
+          <SwiftUIText size={16} color="secondary">Loading crypto prices...</SwiftUIText>
+        </VStack>
+      </Host>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.headerSpacer} />
-      <View style={styles.header}>
-        <Image 
-          source={{ uri: 'https://placehold.co/40' }} 
-          style={styles.logo}
-        />
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.headerButton} onPress={viewTeam}>
-            <Text style={[styles.buttonText, { color: colors.text }]}>View Team</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
-            <FontAwesome name="search" size={20} color={colors.text} />
-          </TouchableOpacity>
-          {/* Theme toggle button */}
-          <TouchableOpacity style={styles.headerButton} onPress={toggleTheme}>
-            <FontAwesome name={theme === 'dark' ? 'sun-o' : 'moon-o'} size={20} color={colors.text} />
-          </TouchableOpacity>
-          <View style={styles.headerButton}>
-            <AppKitButton />
-          </View>
-        </View>
-      </View>
-      <FlatList
-        data={cryptos}
-        renderItem={renderCryptoItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh} 
-            colors={[colors.primary]} 
-            tintColor={colors.primary} 
-          />
-        }
-      />
-    </View>
+    <Host style={[styles.container, { backgroundColor: colors.background }]}>
+      <VStack spacing={15}>
+        {/* Header with enhanced glass effect */}
+        <VStack 
+          modifiers={[
+            glassEffect({ glass: { variant: 'regular' } }),
+            padding({ horizontal: 15, vertical: 12 }),
+            clipShape('roundedRectangle', { cornerRadius: 16 })
+          ]}
+        >
+          <HStack alignment="center">
+            <Image 
+              source={{ uri: 'https://placehold.co/40' }} 
+              style={styles.logo}
+            />
+            <VStack alignment="leading" spacing={2} modifiers={[padding({ horizontal: 10 })]}>
+              <SwiftUIText size={20} weight="bold">Crypto Markets</SwiftUIText>
+              <SwiftUIText size={14} color="secondary">Real-time prices & trends</SwiftUIText>
+            </VStack>
+            <Spacer />
+            <HStack spacing={10}>
+              <Button variant="glass" onPress={viewTeam}>
+                <SwiftUIText size={16}>View Team</SwiftUIText>
+              </Button>
+              <Button variant="glass" systemImage="magnifyingglass" />
+              <Button variant="glass" onPress={toggleTheme} systemImage={theme === 'dark' ? 'sun.max' : 'moon'} />
+            </HStack>
+          </HStack>
+        </VStack>
+
+        {/* Team selection indicator */}
+        {Object.keys(selectedCryptos).filter(id => selectedCryptos[id] !== null).length > 0 && (
+          <HStack 
+            alignment="center" 
+            modifiers={[
+              glassEffect({ glass: { variant: 'clear' } }),
+              padding({ horizontal: 15, vertical: 8 }),
+              clipShape('capsule')
+            ]}
+            style={{ alignSelf: 'center' }}
+          >
+            <SwiftUIText size={14} color="secondary">
+              Team: {Object.keys(selectedCryptos).filter(id => selectedCryptos[id] !== null).length}/5 tokens selected
+            </SwiftUIText>
+          </HStack>
+        )}
+
+        {/* Crypto list with enhanced glass effect and pill-shaped items */}
+        <List scrollEnabled={true} listStyle="plain">
+          {cryptos.map((item) => (
+            <VStack 
+              key={item.id} 
+              modifiers={[
+                glassEffect({ glass: { variant: 'regular' } }), 
+                padding({ vertical: 12, horizontal: 15 }), 
+                clipShape('capsule'), // Pill-shaped design for modern look
+                ...(selectedCryptos[item.id] ? [
+                  { 
+                    // Add a subtle glow effect for selected items
+                    shadowColor: selectedCryptos[item.id] === 'up' ? colors.up : colors.down,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4
+                  }
+                ] : [])
+              ]}
+            >
+              <HStack alignment="center">
+                {/* Crypto logo */}
+                {item.image ? (
+                  <Image 
+                    source={{ uri: item.image }} 
+                    style={styles.cryptoLogo}
+                  />
+                ) : (
+                  <VStack 
+                    modifiers={[
+                      glassEffect({ glass: { variant: 'clear' } }),
+                      clipShape('circle')
+                    ]}
+                    style={styles.cryptoLogoPlaceholder}
+                  />
+                )}
+                
+                <VStack alignment="leading" spacing={4} modifiers={[padding({ horizontal: 10 })]}>
+                  <SwiftUIText size={16} weight="bold">{item.name}</SwiftUIText>
+                  <SwiftUIText size={14} color="secondary">{item.symbol.toUpperCase()}</SwiftUIText>
+                </VStack>
+                <Spacer />
+                <VStack alignment="trailing" spacing={4}>
+                  <SwiftUIText size={16}>${item.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</SwiftUIText>
+                  <SwiftUIText 
+                    size={14}
+                    weight="medium"
+                    color={item.price_change_percentage_24h >= 0 ? colors.up : colors.down}
+                  >
+                    {item.price_change_percentage_24h >= 0 ? '↑' : '↓'} 
+                    {Math.abs(item.price_change_percentage_24h).toFixed(2)}%
+                  </SwiftUIText>
+                </VStack>
+                <HStack spacing={8} modifiers={[padding({ leading: 15 })]}>
+                  <Button
+                    variant="glass"
+                    size="small"
+                    onPress={() => handleCryptoSelect(item.id, 'up')}
+                    systemImage="arrow.up"
+                    tint={selectedCryptos[item.id] === 'up' ? colors.up : 'gray'}
+                    modifiers={[padding({ all: 8 })]}
+                  />
+                  <Button
+                    variant="glass"
+                    size="small"
+                    onPress={() => handleCryptoSelect(item.id, 'down')}
+                    systemImage="arrow.down"
+                    tint={selectedCryptos[item.id] === 'down' ? colors.down : 'gray'}
+                    modifiers={[padding({ all: 8 })]}
+                  />
+                </HStack>
+              </HStack>
+            </VStack>
+          ))}
+        </List>
+      </VStack>
+    </Host>
   );
 }
 
@@ -217,122 +272,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerSpacer: {
-    height: 80, // Creates space at the top
-  },
-  header: {
-    position: 'absolute',
-    top: 40, // Positioned below the status bar
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: 'transparent',
-  },
   logo: {
     width: 40,
     height: 40,
     borderRadius: 20,
   },
-  buttonContainer: {
-    flexDirection: 'row',
+  cryptoLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
-  headerButton: {
-    marginLeft: 15,
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
-  cryptoItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cryptoInfo: {
-    flex: 1,
-  },
-  cryptoName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cryptoSymbol: {
-    fontSize: 14,
-    textTransform: 'uppercase',
-  },
-  priceContainer: {
-    alignItems: 'flex-end',
-    marginRight: 10,
-  },
-  cryptoPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  priceChange: {
-    fontSize: 14,
-  },
-  predictionContainer: {
-    flexDirection: 'row',
-    gap: 5,
-  },
-  predictionButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  upButton: {
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-    borderWidth: 1,
-    borderColor: '#4CAF50',
-  },
-  downButton: {
-    backgroundColor: 'rgba(244, 67, 54, 0.2)',
-    borderWidth: 1,
-    borderColor: '#F44336',
-  },
-  selectedUpButton: {
-    backgroundColor: '#4CAF50',
-  },
-  selectedDownButton: {
-    backgroundColor: '#F44336',
-  },
-  predictionText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  cryptoLogoPlaceholder: {
+    width: 32,
+    height: 32,
   },
 });

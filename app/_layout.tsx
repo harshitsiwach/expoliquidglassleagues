@@ -1,3 +1,4 @@
+import 'react-native-url-polyfill/auto';
 import '@walletconnect/react-native-compat';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
