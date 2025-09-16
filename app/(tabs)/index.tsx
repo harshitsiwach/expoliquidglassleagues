@@ -1,8 +1,8 @@
-import { StyleSheet, View, FlatList, RefreshControl, Image, Alert } from 'react-native';
+import { StyleSheet, View, FlatList, RefreshControl, Image, Alert, TouchableOpacity, StatusBar } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { AppKitButton } from '@reown/appkit-wagmi-react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Define the crypto data structure
 type Cryptocurrency = {
@@ -20,6 +20,7 @@ type TeamSelection = {
 };
 
 export default function HomeScreen() {
+  const { theme, colors, toggleTheme } = useTheme();
   const [cryptos, setCryptos] = useState<Cryptocurrency[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,9 +100,12 @@ export default function HomeScreen() {
       return;
     }
     
-    let teamMessage = `Your Team (${team.length}/5):\n\n`;
+    let teamMessage = `Your Team (${team.length}/5):
+
+`;
     team.forEach((selection, index) => {
-      teamMessage += `${index + 1}. ${selection.crypto.name} (${selection.crypto.symbol.toUpperCase()}) - Predicted: ${selection.prediction.toUpperCase()}\n`;
+      teamMessage += `${index + 1}. ${selection.crypto.name} (${selection.crypto.symbol.toUpperCase()}) - Predicted: ${selection.prediction.toUpperCase()}
+`;
     });
     
     Alert.alert(
@@ -116,16 +120,16 @@ export default function HomeScreen() {
     const isSelected = selectedCryptos[item.id];
     
     return (
-      <View style={styles.cryptoItem}>
+      <View style={[styles.cryptoItem, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.cryptoInfo}>
-          <Text style={styles.cryptoName}>{item.name}</Text>
-          <Text style={styles.cryptoSymbol}>{item.symbol.toUpperCase()}</Text>
+          <Text style={[styles.cryptoName, { color: colors.text }]}>{item.name}</Text>
+          <Text style={[styles.cryptoSymbol, { color: colors.textSecondary }]}>{item.symbol.toUpperCase()}</Text>
         </View>
         <View style={styles.priceContainer}>
-          <Text style={styles.cryptoPrice}>${item.current_price.toLocaleString()}</Text>
+          <Text style={[styles.cryptoPrice, { color: colors.text }]}>${item.current_price.toLocaleString()}</Text>
           <Text style={[
             styles.priceChange,
-            { color: item.price_change_percentage_24h >= 0 ? 'green' : 'red' }
+            { color: item.price_change_percentage_24h >= 0 ? '#4CAF50' : '#F44336' }
           ]}>
             {item.price_change_percentage_24h >= 0 ? '↑' : '↓'} 
             {Math.abs(item.price_change_percentage_24h).toFixed(2)}%
@@ -160,15 +164,15 @@ export default function HomeScreen() {
   // Loading state
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading crypto prices...</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading crypto prices...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerSpacer} />
       <View style={styles.header}>
         <Image 
@@ -177,12 +181,19 @@ export default function HomeScreen() {
         />
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.headerButton} onPress={viewTeam}>
-            <Text style={styles.buttonText}>View Team</Text>
+            <Text style={[styles.buttonText, { color: colors.text }]}>View Team</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerButton}>
-            <FontAwesome name="search" size={20} color="black" />
+            <FontAwesome name="search" size={20} color={colors.text} />
           </TouchableOpacity>
-          <AppKitButton />
+          {/* Theme toggle button */}
+          <TouchableOpacity style={styles.headerButton} onPress={toggleTheme}>
+            <FontAwesome name={theme === 'dark' ? 'sun-o' : 'moon-o'} size={20} color={colors.text} />
+          </TouchableOpacity>
+          {/* Wallet button placeholder */}
+          <TouchableOpacity style={styles.headerButton}>
+            <FontAwesome name="wallet" size={20} color={colors.text} />
+          </TouchableOpacity>
         </View>
       </View>
       <FlatList
@@ -190,7 +201,12 @@ export default function HomeScreen() {
         renderItem={renderCryptoItem}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[colors.primary]} 
+            tintColor={colors.primary} 
+          />
         }
       />
     </View>
@@ -200,7 +216,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'orange',
   },
   headerSpacer: {
     height: 80, // Creates space at the top
@@ -228,7 +243,7 @@ const styles = StyleSheet.create({
   headerButton: {
     marginLeft: 15,
     padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -255,7 +270,6 @@ const styles = StyleSheet.create({
     padding: 15,
     marginHorizontal: 10,
     marginVertical: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -272,7 +286,6 @@ const styles = StyleSheet.create({
   },
   cryptoSymbol: {
     fontSize: 14,
-    color: '#666',
     textTransform: 'uppercase',
   },
   priceContainer: {
@@ -298,20 +311,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   upButton: {
-    backgroundColor: 'rgba(0, 255, 0, 0.2)',
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
     borderWidth: 1,
-    borderColor: 'green',
+    borderColor: '#4CAF50',
   },
   downButton: {
-    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+    backgroundColor: 'rgba(244, 67, 54, 0.2)',
     borderWidth: 1,
-    borderColor: 'red',
+    borderColor: '#F44336',
   },
   selectedUpButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#4CAF50',
   },
   selectedDownButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#F44336',
   },
   predictionText: {
     fontSize: 16,

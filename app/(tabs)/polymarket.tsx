@@ -1,6 +1,6 @@
-import { StyleSheet, View, FlatList, RefreshControl, ActivityIndicator, Image } from 'react-native';
-import { Text } from 'react-native';
-import { useState, useEffect } from 'react';
+import { StyleSheet, View, FlatList, RefreshControl, ActivityIndicator, Text, Image, TouchableOpacity, StatusBar } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Define the Polymarket market structure
 type PolymarketMarket = {
@@ -27,6 +27,7 @@ type PolymarketMarket = {
 };
 
 export default function PolymarketScreen() {
+  const { colors } = useTheme();
   const [markets, setMarkets] = useState<PolymarketMarket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,7 +81,7 @@ export default function PolymarketScreen() {
       const data = await response.json();
       
       // Process the data to add computed properties
-      const processedMarkets = data.map((market: any) => ({
+      const processedMarkets = data.map((market: any, index: number) => ({
         ...market,
         parsedOutcomes: parseOutcomes(market.outcomes),
         parsedPrices: parsePrices(market.outcomePrices),
@@ -111,16 +112,16 @@ export default function PolymarketScreen() {
 
   // Render individual market item
   const renderMarketItem = ({ item }: { item: PolymarketMarket }) => (
-    <View style={styles.marketCard}>
+    <View style={[styles.marketCard, { backgroundColor: colors.cardBackground }]}>
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.marketImage} />
       ) : null}
       <View style={styles.cardContent}>
-        <Text style={styles.question}>{item.question}</Text>
+        <Text style={[styles.question, { color: colors.text }]}>{item.question}</Text>
         
         <View style={styles.metadata}>
-          <Text style={styles.category}>{item.category}</Text>
-          <Text style={styles.volume}>{item.formattedVolume}</Text>
+          <Text style={[styles.category, { color: colors.text }]}>{item.category}</Text>
+          <Text style={[styles.volume, { color: '#4CAF50' }]}>{item.formattedVolume}</Text>
         </View>
         
         <View style={styles.outcomesContainer}>
@@ -130,8 +131,8 @@ export default function PolymarketScreen() {
             
             return (
               <View key={index} style={styles.outcome}>
-                <Text style={styles.outcomeText}>{outcome}</Text>
-                <Text style={styles.price}>{percentage}%</Text>
+                <Text style={[styles.outcomeText, { color: colors.text }]}>{outcome}</Text>
+                <Text style={[styles.price, { color: colors.text }]}>{percentage}%</Text>
               </View>
             );
           })}
@@ -143,9 +144,9 @@ export default function PolymarketScreen() {
   // Loading state
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading Polymarket data...</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading Polymarket data...</Text>
       </View>
     );
   }
@@ -153,9 +154,9 @@ export default function PolymarketScreen() {
   // Error state
   if (error) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText} onPress={fetchPolymarketData}>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: '#F44336' }]}>{error}</Text>
+        <Text style={[styles.retryText, { color: colors.primary }]} onPress={fetchPolymarketData}>
           Tap to retry
         </Text>
       </View>
@@ -163,14 +164,19 @@ export default function PolymarketScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Trending Polymarkets</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header, { color: colors.text }]}>Trending Polymarkets</Text>
       <FlatList
         data={markets}
         renderItem={renderMarketItem}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[colors.primary]} 
+            tintColor={colors.primary} 
+          />
         }
       />
     </View>
@@ -180,7 +186,6 @@ export default function PolymarketScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'orange',
   },
   center: {
     justifyContent: 'center',
@@ -191,7 +196,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
-    color: '#000',
   },
   loadingText: {
     marginTop: 10,
@@ -199,17 +203,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: 'red',
     textAlign: 'center',
     marginBottom: 10,
   },
   retryText: {
     fontSize: 16,
-    color: 'blue',
     textDecorationLine: 'underline',
   },
   marketCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     margin: 10,
     borderRadius: 12,
     overflow: 'hidden',
@@ -242,12 +243,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 4,
     fontSize: 12,
-    color: '#000',
   },
   volume: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: 'green',
   },
   outcomesContainer: {
     flexDirection: 'row',

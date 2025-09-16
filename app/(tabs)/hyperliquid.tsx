@@ -1,6 +1,7 @@
-import { StyleSheet, View, FlatList, RefreshControl, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, FlatList, RefreshControl, ActivityIndicator, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Hyperliquid } from 'hyperliquid';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Define the market data structure
 type MarketData = {
@@ -15,6 +16,7 @@ type MarketData = {
 };
 
 export default function HyperliquidScreen() {
+  const { colors } = useTheme();
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -76,14 +78,14 @@ export default function HyperliquidScreen() {
 
   // Render individual market item
   const renderMarketItem = ({ item }: { item: MarketData }) => (
-    <TouchableOpacity style={styles.marketItem}>
+    <TouchableOpacity style={[styles.marketItem, { backgroundColor: colors.cardBackground }]}>
       <View style={styles.marketHeader}>
-        <Text style={styles.marketName}>{item.name}-PERP</Text>
-        <Text style={styles.leverage}>{item.maxLeverage}x</Text>
+        <Text style={[styles.marketName, { color: colors.text }]}>{item.name}-PERP</Text>
+        <Text style={[styles.leverage, { color: colors.text }]}>{item.maxLeverage}x</Text>
       </View>
       
       <View style={styles.marketData}>
-        <Text style={styles.price}>${parseFloat(item.price).toLocaleString()}</Text>
+        <Text style={[styles.price, { color: colors.text }]}>${parseFloat(item.price).toLocaleString()}</Text>
         <Text style={[
           styles.change,
           { color: parseFloat(item.change24h) >= 0 ? '#4CAF50' : '#F44336' }
@@ -93,9 +95,9 @@ export default function HyperliquidScreen() {
       </View>
       
       <View style={styles.marketStats}>
-        <Text style={styles.statText}>Volume: ${item.volume24h}</Text>
-        <Text style={styles.statText}>Funding: {item.fundingRate}%</Text>
-        <Text style={styles.statText}>OI: ${item.openInterest}</Text>
+        <Text style={[styles.statText, { color: colors.textSecondary }]}>Volume: ${item.volume24h}</Text>
+        <Text style={[styles.statText, { color: colors.textSecondary }]}>Funding: {item.fundingRate}%</Text>
+        <Text style={[styles.statText, { color: colors.textSecondary }]}>OI: ${item.openInterest}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -103,9 +105,9 @@ export default function HyperliquidScreen() {
   // Loading state
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading Hyperliquid data...</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading Hyperliquid data...</Text>
       </View>
     );
   }
@@ -113,9 +115,9 @@ export default function HyperliquidScreen() {
   // Error state
   if (error) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText} onPress={fetchMarketData}>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: '#F44336' }]}>{error}</Text>
+        <Text style={[styles.retryText, { color: colors.primary }]} onPress={fetchMarketData}>
           Tap to retry
         </Text>
       </View>
@@ -123,15 +125,20 @@ export default function HyperliquidScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Hyperliquid Markets</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header, { color: colors.text }]}>Hyperliquid Markets</Text>
       
       <FlatList
         data={marketData}
         keyExtractor={(item) => item.id}
         renderItem={renderMarketItem}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[colors.primary]} 
+            tintColor={colors.primary} 
+          />
         }
       />
     </View>
@@ -141,7 +148,6 @@ export default function HyperliquidScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'orange',
   },
   center: {
     justifyContent: 'center',
@@ -152,7 +158,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
-    color: '#000',
   },
   loadingText: {
     marginTop: 10,
@@ -160,17 +165,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: 'red',
     textAlign: 'center',
     marginBottom: 10,
   },
   retryText: {
     fontSize: 16,
-    color: 'blue',
     textDecorationLine: 'underline',
   },
   marketItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 12,
     padding: 16,
     margin: 10,
@@ -189,7 +191,6 @@ const styles = StyleSheet.create({
   marketName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
   },
   leverage: {
     fontSize: 12,
@@ -208,7 +209,6 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
   },
   change: {
     fontSize: 16,
@@ -220,7 +220,6 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 12,
-    color: '#666',
   },
   separator: {
     marginVertical: 30,

@@ -1,6 +1,6 @@
-import { StyleSheet, View, ActivityIndicator, Text, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Text, Image, TouchableOpacity, FlatList, RefreshControl, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
-import { FlatList, RefreshControl } from 'react-native-gesture-handler';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Define the news article structure
 type NewsArticle = {
@@ -16,6 +16,7 @@ type NewsArticle = {
 };
 
 export default function NewsScreen() {
+  const { colors } = useTheme();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,7 +90,7 @@ export default function NewsScreen() {
     const article = articles[currentIndex];
     
     return (
-      <View style={styles.slide}>
+      <View style={[styles.slide, { backgroundColor: colors.cardBackground }]}>
         {article.imageurl ? (
           <Image 
             source={{ uri: article.imageurl }} 
@@ -97,14 +98,14 @@ export default function NewsScreen() {
             resizeMode="cover"
           />
         ) : (
-          <View style={styles.placeholderImage} />
+          <View style={[styles.placeholderImage, { backgroundColor: colors.border }]} />
         )}
         <View style={styles.articleContent}>
-          <Text style={styles.articleTitle}>{article.title}</Text>
-          <Text style={styles.articleDescription} numberOfLines={3}>{article.body}</Text>
+          <Text style={[styles.articleTitle, { color: colors.text }]}>{article.title}</Text>
+          <Text style={[styles.articleDescription, { color: colors.text }]} numberOfLines={3}>{article.body}</Text>
           <View style={styles.articleMeta}>
-            <Text style={styles.source}>{article.source_info.name}</Text>
-            <Text style={styles.date}>
+            <Text style={[styles.source, { color: colors.textSecondary }]}>{article.source_info.name}</Text>
+            <Text style={[styles.date, { color: colors.textSecondary }]}>
               {new Date(article.published_on * 1000).toLocaleDateString()}
             </Text>
           </View>
@@ -116,9 +117,9 @@ export default function NewsScreen() {
   // Loading state
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading crypto news...</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>Loading crypto news...</Text>
       </View>
     );
   }
@@ -126,9 +127,9 @@ export default function NewsScreen() {
   // Error state
   if (error) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText} onPress={fetchCryptoNews}>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: '#F44336' }]}>{error}</Text>
+        <Text style={[styles.retryText, { color: colors.primary }]} onPress={fetchCryptoNews}>
           Tap to retry
         </Text>
       </View>
@@ -138,46 +139,46 @@ export default function NewsScreen() {
   // Empty state
   if (articles.length === 0) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.emptyText}>No crypto news available at the moment.</Text>
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.emptyText, { color: colors.text }]}>No crypto news available at the moment.</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Crypto News</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header, { color: colors.text }]}>Crypto News</Text>
       
       {/* Slideshow */}
       <View style={styles.slideshowContainer}>
         {renderSlideshowItem()}
         
         {/* Navigation buttons */}
-        <View style={styles.navigation}>
+        <View style={[styles.navigation, { backgroundColor: colors.cardBackground }]}>
           <TouchableOpacity style={styles.navButton} onPress={prevArticle}>
-            <Text style={styles.navButtonText}>‹</Text>
+            <Text style={[styles.navButtonText, { color: colors.text }]}>‹</Text>
           </TouchableOpacity>
           
-          <Text style={styles.indicator}>
+          <Text style={[styles.indicator, { color: colors.text }]}>
             {currentIndex + 1} / {articles.length}
           </Text>
           
           <TouchableOpacity style={styles.navButton} onPress={nextArticle}>
-            <Text style={styles.navButtonText}>›</Text>
+            <Text style={[styles.navButtonText, { color: colors.text }]}>›</Text>
           </TouchableOpacity>
         </View>
       </View>
       
       {/* Article list */}
       <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>More News</Text>
+        <Text style={[styles.listTitle, { color: colors.text }]}>More News</Text>
       </View>
       
       <FlatList
         data={articles}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            style={styles.articleItem}
+            style={[styles.articleItem, { backgroundColor: colors.cardBackground }]}
             onPress={() => setCurrentIndex(articles.indexOf(item))}
           >
             {item.imageurl ? (
@@ -186,17 +187,22 @@ export default function NewsScreen() {
                 style={styles.articleItemImg}
               />
             ) : (
-              <View style={styles.placeholderImageSmall} />
+              <View style={[styles.placeholderImageSmall, { backgroundColor: colors.border }]} />
             )}
             <View style={styles.articleItemContent}>
-              <Text style={styles.articleItemTitle} numberOfLines={2}>{item.title}</Text>
-              <Text style={styles.articleItemSource}>{item.source_info.name}</Text>
+              <Text style={[styles.articleItemTitle, { color: colors.text }]} numberOfLines={2}>{item.title}</Text>
+              <Text style={[styles.articleItemSource, { color: colors.textSecondary }]}>{item.source_info.name}</Text>
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[colors.primary]} 
+            tintColor={colors.primary} 
+          />
         }
       />
     </View>
@@ -206,7 +212,6 @@ export default function NewsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'orange',
   },
   center: {
     justifyContent: 'center',
@@ -217,7 +222,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
-    color: '#000',
   },
   loadingText: {
     marginTop: 10,
@@ -225,13 +229,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: 'red',
     textAlign: 'center',
     marginBottom: 10,
   },
   retryText: {
     fontSize: 16,
-    color: 'blue',
     textDecorationLine: 'underline',
   },
   emptyText: {
@@ -243,7 +245,6 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -260,7 +261,6 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: 180,
-    backgroundColor: '#ccc',
   },
   articleContent: {
     padding: 15,
@@ -282,11 +282,9 @@ const styles = StyleSheet.create({
   source: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#666',
   },
   date: {
     fontSize: 12,
-    color: '#666',
   },
   navigation: {
     flexDirection: 'row',
@@ -294,7 +292,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   navButton: {
     padding: 10,
@@ -314,11 +311,9 @@ const styles = StyleSheet.create({
   listTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
   },
   articleItem: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     marginHorizontal: 10,
     marginVertical: 5,
     borderRadius: 8,
@@ -336,7 +331,6 @@ const styles = StyleSheet.create({
   placeholderImageSmall: {
     width: 80,
     height: 80,
-    backgroundColor: '#ccc',
   },
   articleItemContent: {
     flex: 1,
@@ -349,7 +343,6 @@ const styles = StyleSheet.create({
   },
   articleItemSource: {
     fontSize: 12,
-    color: '#666',
   },
   separator: {
     marginVertical: 30,
