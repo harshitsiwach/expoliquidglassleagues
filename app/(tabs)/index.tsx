@@ -2,6 +2,7 @@ import { StyleSheet, View, FlatList, RefreshControl, Image, Alert, TouchableOpac
 import { Text, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { AppKitButton } from '@reown/appkit-wagmi-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 // Define the crypto data structure
@@ -190,10 +191,9 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.headerButton} onPress={toggleTheme}>
             <FontAwesome name={theme === 'dark' ? 'sun-o' : 'moon-o'} size={20} color={colors.text} />
           </TouchableOpacity>
-          {/* Wallet button placeholder */}
-          <TouchableOpacity style={styles.headerButton}>
-            <FontAwesome name="wallet" size={20} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.headerButton}>
+            <AppKitButton />
+          </View>
         </View>
       </View>
       <FlatList
